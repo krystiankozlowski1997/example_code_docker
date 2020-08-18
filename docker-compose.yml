@@ -1,0 +1,45 @@
+version: '3'
+services:
+  paintings_api:
+    build: ./api
+    ports:
+      - '4000:80'
+    depends_on:
+      - mysql
+    volumes:
+      - './api/:/var/www/html/'
+    environment:
+      - SECURITY_SALT=0T0gK:G=kR0@j#aHT9BEyXa4!n1LYFx!
+      - DB_HOST=mysql
+      - DB_NAME=kursy
+      - EMAIL_HOST=ssl://mail.test.com
+      - EMAIL_USER=eq@test.com
+      - EMAIL_PASS=oongie4Nahw4foo9
+      - EMAIL_PORT=465
+      - EMAIL_TLS=false
+      - EMAIL_FROM=no-reply@test.com
+    links:
+      - mysql
+  paintings_web:
+    build: ./web
+    command: bash -c "npm install && npm start"
+    volumes:
+      - './web/:/web/'
+    depends_on:
+      - paintings_api
+    ports:
+      - '3000:3000'
+    environment:
+      - API_ADDRESS=paintings_api
+    links:
+      - paintings_api
+    stdin_open: true
+  mysql:
+    image: mysql
+    command: mysqld --default-authentication-plugin=mysql_native_password
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=root
+    volumes:
+      - './database:/docker-entrypoint-initdb.d'
+    stdin_open: true
